@@ -1,6 +1,9 @@
 from song_definition import Song
 
 class NumericalSongData(Song):
+    numerical_features = ['year', 'peak_pos', 'last_pos', 'weeks', 'rank', 'change', 'energy', 'liveness',
+                          'tempo', 'speechiness', 'acousticness', 'instrumentalness', 'time_signature', 'danceability',
+                          'key', 'duration_ms', 'loudness', 'valence', 'mode']
     def __init__(self, title, artist, peak_pos, year, last_pos, weeks, rank, spotify_attributes):
         """
         Initialize the NumericalSongData class with numerical attributes.

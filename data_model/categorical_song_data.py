@@ -2,6 +2,9 @@ from song_definition import Song
 
 
 class CategoricalSongData(Song):
+    categorical_features = ['title', 'date', 'simple_title', 'artist', 'main_artist', 'spotify_link', 'spotify_id',
+                            'video_link', 'genre', 'analysis_url', 'lyrics']
+
     def __init__(self, title, artist, peak_pos, lyrics, date, main_artist=None, change=None, spotify_link=None,
                  spotify_id=None, video_link=None, genre=None, broad_genre=None, analysis_url=None,
                  additional_spotify_attributes=None):

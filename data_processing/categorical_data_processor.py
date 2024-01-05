@@ -1,13 +1,14 @@
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
 
+
 class CategoricalDataProcessor:
-    def __init__(self, data):
+    def __init__(self, data, categorical_features):
         """
         Initialize the CategoricalDataProcessor with the dataset.
         :param data: DataFrame - The dataset containing categorical features.
         """
-        self.data = data
+        self.data = data[categorical_features]
 
     def handle_missing_values(self):
         """

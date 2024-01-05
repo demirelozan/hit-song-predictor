@@ -1,18 +1,19 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
+
 class NumericalDataProcessor:
-    def __init__(self, data):
+    def __init__(self, data, numerical_features):
         """
         Initialize with the dataset containing numerical features.
         :param data: DataFrame - The dataset.
         """
-        self.data = data
+        self.data = data[numerical_features]
 
     def handle_missing_values(self):
-        """
-        Handle missing values in numerical data.
-        """
+        # Convert 'NA' and 'unknown' to NaN
+        self.data = self.data.replace(['NA', 'unknown'], pd.NA)
+        # Filling NaN with mean value
         self.data.fillna(self.data.mean(), inplace=True)
 
     def normalize_features(self):
@@ -41,4 +42,3 @@ class NumericalDataProcessor:
             self.normalize_features()
         else:
             self.standardize_features()
-
