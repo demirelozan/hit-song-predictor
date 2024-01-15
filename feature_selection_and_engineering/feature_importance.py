@@ -103,7 +103,9 @@ def filter(csv):
 def main():
     dataPath = 'D:\\Machine Learning Datasets\\billboard_2000_2018_spotify_lyrics.xlsx'
     original_data = pd.read_excel(dataPath, engine='openpyxl')
-    data_processor = DataProcessor(original_data)
+    numerical_features = NumericalSongData.get_numerical_features()
+    categorical_features = CategoricalSongData.get_categorical_features()
+    data_processor = DataProcessor(original_data, numerical_features= numerical_features, categorical_features= categorical_features)
     processed_data = data_processor.process_data()
     print(processed_data.columns)
     filter(processed_data)

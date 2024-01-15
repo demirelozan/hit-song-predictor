@@ -23,3 +23,4 @@ class DataProcessor:
 
         # Combine processed data
         self.data = pd.concat([numerical_processor.data, categorical_processor.data], axis=1)
+        return self.data

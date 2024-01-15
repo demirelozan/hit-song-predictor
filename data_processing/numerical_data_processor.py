@@ -8,13 +8,20 @@ class NumericalDataProcessor:
         Initialize with the dataset containing numerical features.
         :param data: DataFrame - The dataset.
         """
-        self.data = data[numerical_features]
+        self.data = data
+        self.numerical_features = numerical_features
 
-    def handle_missing_values(self):
-        # Convert 'NA' and 'unknown' to NaN
-        self.data = self.data.replace(['NA', 'unknown'], pd.NA)
-        # Filling NaN with mean value
-        self.data.fillna(self.data.mean(), inplace=True)
+    def convert_types_and_handle_missing(self):
+        """
+        Convert columns to their appropriate numerical types and handle missing values.
+        """
+        for feature in self.numerical_features:
+            # Convert to numeric, coercing errors (like 'NA', 'unknown') to NaN
+            self.data.loc[:, feature] = pd.to_numeric(self.data[feature], errors='coerce')
+
+        # Calculate mean for numeric columns only and fill NaNs in those columns
+        numeric_cols = self.data.select_dtypes(include=['float64', 'int64']).columns
+        self.data[numeric_cols] = self.data[numeric_cols].fillna(self.data[numeric_cols].mean())
 
     def normalize_features(self):
         """
@@ -37,7 +44,7 @@ class NumericalDataProcessor:
         Process the data by applying all the processing steps.
         :param normalize: bool - Whether to normalize (True) or standardize (False) the data.
         """
-        self.handle_missing_values()
+        self.convert_types_and_handle_missing()
         if normalize:
             self.normalize_features()
         else:

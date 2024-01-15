@@ -8,23 +8,48 @@ class CategoricalDataProcessor:
         Initialize the CategoricalDataProcessor with the dataset.
         :param data: DataFrame - The dataset containing categorical features.
         """
-        self.data = data[categorical_features]
+        self.data = data
+        self.categorical_features = categorical_features
+
+    def remove_unwanted_features(self):
+        """
+        Remove specific unwanted features from the data.
+        """
+        print("Columns before removal:", self.data.columns)
+        features_to_remove = ['simple_title', 'spotify_link', 'spotify_id', 'video_link', 'analysis_url']
+        for feature in features_to_remove:
+            if feature in self.data.columns:
+                self.data = self.data.drop(feature, axis=1)
+                print("Columns after removal:", self.data.columns)
+
+    def convert_to_string(self):
+        """
+        Convert all categorical columns to string type.
+        """
+        for feature in self.categorical_features:
+            print(self.categorical_features)
+            if feature in self.data.columns:
+                print(feature)
+                print(self.data.columns)
+                self.data[feature] = self.data[feature].astype(str)
 
     def handle_missing_values(self):
         """
         Handle missing values in categorical data.
         """
-        # Example: Fill missing values with a placeholder
-        self.data.fillna('Unknown', inplace=True)
+        for feature in self.categorical_features:
+            self.data.fillna('Unknown', inplace=True)
 
     def encode_categorical_data(self):
         """
         Encode categorical data.
         """
-        categorical_features = self.data.select_dtypes(include=['object']).columns
+        print(self.data.dtypes)
+        categorical_features = [column for column in self.data.columns if column in self.categorical_features]
+        # categorical_features = self.data.select_dtypes(include=['object']).columns
         encoder = OneHotEncoder(sparse=False, handle_unknown='ignore')
         encoded_data = encoder.fit_transform(self.data[categorical_features])
-        encoded_df = pd.DataFrame(encoded_data, columns=encoder.get_feature_names(categorical_features))
+        encoded_df = pd.DataFrame(encoded_data, columns=encoder.get_feature_names_out(categorical_features))
 
         # Drop original categorical columns and add encoded columns
         self.data = self.data.drop(categorical_features, axis=1)
@@ -41,6 +66,9 @@ class CategoricalDataProcessor:
         """
         Process the data by applying all the processing steps.
         """
+        # print(self.data.columns)
+        self.remove_unwanted_features()
+        self.convert_to_string()
         self.handle_missing_values()
         self.encode_categorical_data()
         self.process_lyrics()
