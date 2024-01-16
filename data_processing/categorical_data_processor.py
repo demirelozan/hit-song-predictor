@@ -1,5 +1,11 @@
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
+from transformers import BertTokenizer, BertModel
+import torch
+
+# Initialize tokenizer and model
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
+model = BertModel.from_pretrained('bert-base-uncased')
 
 
 class CategoricalDataProcessor:
@@ -10,6 +16,8 @@ class CategoricalDataProcessor:
         """
         self.data = data
         self.categorical_features = categorical_features
+        self.lyrics = None
+
 
     def remove_unwanted_features(self):
         """
@@ -21,6 +29,11 @@ class CategoricalDataProcessor:
             if feature in self.data.columns:
                 self.data = self.data.drop(feature, axis=1)
                 print("Columns after removal:", self.data.columns)
+
+    def separate_lyrics(self):
+        if 'lyrics' in self.data.columns:
+            self.lyrics = self.data['lyrics']
+            self.data = self.data.drop('lyrics', axis=1)
 
     def convert_to_string(self):
         """
@@ -55,12 +68,17 @@ class CategoricalDataProcessor:
         self.data = self.data.drop(categorical_features, axis=1)
         self.data = pd.concat([self.data, encoded_df], axis=1)
 
-    def process_lyrics(self):
-        """
-        Process the lyrics for NLP tasks.
-        """
-        # Implement NLP techniques for lyrics processing
-        # Example: Sentiment analysis, keyword extraction, etc.
+    # Function to process and get BERT embeddings for a piece of text
+    def get_bert_embeddings(text):
+        # Tokenize the text
+        inputs = tokenizer(text, return_tensors='pt', truncation=True, max_length=512)
+        # Get BERT embeddings
+        outputs = model(**inputs)
+        # Extract the embeddings (for example, the last hidden state)
+        embeddings = outputs.last_hidden_state
+        # Process embeddings (e.g., mean pooling, dimensionality reduction)
+        # ...
+        return processed_embeddings
 
     def process_data(self):
         """
@@ -68,7 +86,11 @@ class CategoricalDataProcessor:
         """
         # print(self.data.columns)
         self.remove_unwanted_features()
+        self.separate_lyrics()
         self.convert_to_string()
         self.handle_missing_values()
         self.encode_categorical_data()
         self.process_lyrics()
+
+    def reintegrate_lyrics(self, processed_lyrics):
+        self.data['processed_lyrics'] = processed_lyrics
