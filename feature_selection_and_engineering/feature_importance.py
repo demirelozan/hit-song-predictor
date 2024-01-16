@@ -14,6 +14,8 @@ from sklearn.decomposition import PCA, NMF
 from data_model.numerical_song_data import NumericalSongData
 from data_model.categorical_song_data import CategoricalSongData
 from data_processing.data_processor import DataProcessor
+from data_model.song_classifier import SongClassifier
+from feature_selection_and_engineering.dataVisualization import DataVisualization
 
 
 def pipeline(csv):
@@ -67,17 +69,17 @@ def pipeline(csv):
     plt.show()
 
 
-def builtIn(csv):
-    X = csv.iloc[:, 3:-1]
-    y = csv.iloc[:, -1]
+def builtIn(_processed_data):
+    X = _processed_data.iloc[:, 3:-1]
+    y = _processed_data.iloc[:, -1]
     # X_new_anova = SelectKBest(f_classif, k=4).fit_transform(X, y)
     X_new_chi = SelectKBest(chi2, k=4).fit_transform(X, y)
     # print(X_new_chi, X_new_anova)
 
 
-def wrapper(csv, mode):  # Backward Elimination, Forward Selection, Bidirectional Elimination and RFE
-    X = csv.iloc[:, :-1]
-    y = csv.iloc[:, -1]
+def wrapper(_processed_data, mode):  # Backward Elimination, Forward Selection, Bidirectional Elimination and RFE
+    X = _processed_data.iloc[:, :-1]
+    y = _processed_data.iloc[:, -1]
     X_1 = sm.add_constant(X)
     if mode == 0:  # BE
         model = sm.OLS(y, X_1).fit()
@@ -89,10 +91,11 @@ def embedded():
     return 0
 
 
-def filter(csv):
+def filter(_processed_data):
     # Using correlation matrix
+    numeric_data = _processed_data.select_dtypes(include=[np.number])
     plt.figure(figsize=(12, 10))  # Create matrix
-    cor = csv.corr()
+    cor = numeric_data.corr()
     sns.heatmap(cor, annot=True)
     plt.show()
     cor_target = abs(cor["Target"])
@@ -103,15 +106,29 @@ def filter(csv):
 def main():
     dataPath = 'D:\\Machine Learning Datasets\\billboard_2000_2018_spotify_lyrics.xlsx'
     original_data = pd.read_excel(dataPath, engine='openpyxl')
+
+    song_classifier = SongClassifier(original_data)
+    song_classifier.update_songs_from_data(original_data)
+    output_file_path = 'D:/Machine Learning Datasets/updated_data_with_isHit.xlsx'
+    song_classifier.execute_classification(original_data, hit_threshold=10, output_file_path=output_file_path)
+
+    updated_data = pd.read_excel(output_file_path, engine='openpyxl')
+
     numerical_features = NumericalSongData.get_numerical_features()
     categorical_features = CategoricalSongData.get_categorical_features()
-    data_processor = DataProcessor(original_data, numerical_features= numerical_features, categorical_features= categorical_features)
+
+    data_processor = DataProcessor(updated_data, numerical_features=numerical_features, categorical_features=categorical_features)
     processed_data = data_processor.process_data()
+
     print(processed_data.columns)
-    filter(processed_data)
+
+    data_visualization = DataVisualization(processed_data)
+    data_visualization.execute_visualizations(numeric_feature_columns=numerical_features)
+
+    '''filter(processed_data)
     wrapper(processed_data, 0)
     builtIn(processed_data)
-    pipeline(processed_data)
+    pipeline(processed_data)'''
 
 
 main()

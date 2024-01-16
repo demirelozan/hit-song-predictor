@@ -16,6 +16,7 @@ class NumericalDataProcessor:
         Convert columns to their appropriate numerical types and handle missing values.
         """
         for feature in self.numerical_features:
+            print(feature)
             # Convert to numeric, coercing errors (like 'NA', 'unknown') to NaN
             self.data.loc[:, feature] = pd.to_numeric(self.data[feature], errors='coerce')
 
