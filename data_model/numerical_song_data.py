@@ -4,7 +4,7 @@ class NumericalSongData:
                           'energy', 'liveness', 'tempo', 'speechiness',
                           'acousticness', 'instrumentalness', 'time_signature',
                           'danceability', 'key', 'duration_ms', 'loudness',
-                          'valence', 'mode']
+                          'valence', 'mode', 'Is Hit']
 
     def __init__(self):
         pass
