@@ -16,7 +16,7 @@ from data_model.categorical_song_data import CategoricalSongData
 from data_processing.data_processor import DataProcessor
 from data_model.song_classifier import SongClassifier
 from feature_selection_and_engineering.dataVisualization import DataVisualization
-
+from machine_learning.numerical_ml_models import ModelTraining
 
 def pipeline(csv):
     pipe = Pipeline([
@@ -110,6 +110,7 @@ def main():
     song_classifier = SongClassifier(original_data)
     song_classifier.update_songs_from_data(original_data)
     output_file_path = 'D:/Machine Learning Datasets/updated_data_with_isHit.xlsx'
+
     song_classifier.execute_classification(original_data, hit_threshold=10, output_file_path=output_file_path)
 
     updated_data = pd.read_excel(output_file_path, engine='openpyxl')
@@ -122,9 +123,13 @@ def main():
 
     print(processed_data.columns)
 
+    model_trainer = ModelTraining(processed_data)
+    model_trainer.perform_models()
+
+    '''
     data_visualization = DataVisualization(processed_data)
     data_visualization.execute_visualizations(numeric_feature_columns=numerical_features)
-
+    '''
     '''filter(processed_data)
     wrapper(processed_data, 0)
     builtIn(processed_data)

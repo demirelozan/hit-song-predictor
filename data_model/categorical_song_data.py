@@ -1,6 +1,6 @@
 class CategoricalSongData:
     # List of categorical feature names
-    categorical_features = ['title', 'artist', 'lyrics', 'genre', 'main_artist',
+    categorical_features = ['title', 'artist', 'lyrics', 'genre', 'broad_genre', 'main_artist',
                             'spotify_link', 'spotify_id', 'video_link',
                             'simple_title', 'analysis_url']
 

@@ -59,7 +59,7 @@ class SongClassifier:
         if weight_factors:
             self.calculate_custom_score(weight_factors)
 
-        data['Is Hit'] = [int(song.is_hit) for song in self.songs]
+        data['is_hit'] = [int(song.is_hit) for song in self.songs]
         if weight_factors:
             data['Score'] = [song.score if hasattr(song, 'score') else 'N/A' for song in self.songs]
 
