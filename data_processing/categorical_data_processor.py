@@ -5,6 +5,9 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.model_selection import train_test_split
 from data_model.numerical_song_data import NumericalSongData
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.decomposition import LatentDirichletAllocation
+import re
 
 # Initialize tokenizer and model
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
@@ -38,36 +41,54 @@ class CategoricalDataProcessor:
 
     def convert_to_string(self):
         """
-        Convert all categorical columns to string type.
+        Convert specific categorical columns to string type.
         """
-        for feature in self.categorical_features:
-            print(self.categorical_features)
+        for feature in ['title']:
             if feature in self.data.columns:
-                print(feature)
-                print(self.data.columns)
                 self.data[feature] = self.data[feature].astype(str)
 
     def handle_missing_values(self):
         """
-        Handle missing values in categorical data.
+        Handle missing values selectively for categorical data.
         """
-        for _ in self.categorical_features:
-            self.data.fillna('Unknown', inplace=True)
+        # For columns like 'broad_genre', replace NaN with a placeholder like 'Unknown'
+        if 'broad_genre' in self.categorical_features:
+            self.data['broad_genre'].fillna('Unknown', inplace=True)
 
-    def encode_categorical_data(self):
-        """
-        Encode categorical data.
-        """
-        print(self.data.dtypes)
-        categorical_features = [column for column in self.data.columns if column in self.categorical_features]
-        # categorical_features = self.data.select_dtypes(include=['object']).columns
-        encoder = OneHotEncoder(sparse=False, handle_unknown='ignore')
-        encoded_data = encoder.fit_transform(self.data[categorical_features])
-        encoded_df = pd.DataFrame(encoded_data, columns=encoder.get_feature_names_out(categorical_features))
+    # Preprocess titles: Remove symbols, punctuation, short terms, stopwords
 
-        # Drop original categorical columns and add encoded columns
-        self.data = self.data.drop(categorical_features, axis=1)
-        self.data = pd.concat([self.data, encoded_df], axis=1)
+    def preprocess_song_titles(self):
+        """
+        Preprocess song titles for LDA.
+        """
+
+        def preprocess_title(title):
+            title = re.sub(r'[^\w\s]', '', title)  # Remove punctuation
+            title = ' '.join([word for word in title.split() if len(word) > 3])  # Remove short words
+            # Add additional preprocessing steps if necessary
+            return title
+
+        self.data['title'] = self.data['title'].apply(preprocess_title)
+
+    def apply_lda(self, n_components=10):
+        """
+        Apply LDA to the song titles.
+        """
+        vectorizer = CountVectorizer()
+        X = vectorizer.fit_transform(self.data['title'])
+        lda = LatentDirichletAllocation(n_components=n_components, random_state=0)
+        lda.fit(X)
+
+        topic_results = lda.transform(X)
+        self.data['song_title_topic'] = topic_results.argmax(axis=1)
+
+    def numerical_encoding_for_genres(self):
+        """
+        Apply numerical encoding to genres.
+        """
+        genre_mapping = {'country': 1, 'edm': 2, 'pop': 3, 'r&b': 4, 'rock': 5, 'rap': 6}
+        self.data['genre_class'] = self.data['broad_genre'].map(genre_mapping).fillna(
+            0)  # Fill NaN with a default value
 
     def tokenize_lyrics(self, lyrics_data):
         input_ids = []
@@ -139,8 +160,12 @@ class CategoricalDataProcessor:
         self.separate_lyrics()
         self.convert_to_string()
         self.handle_missing_values()
-        self.encode_categorical_data()
+
+        self.preprocess_song_titles()
+        self.apply_lda(n_components=10)
         # self.create_data_loaders()
+
+        self.numerical_encoding_for_genres()
 
     def reintegrate_lyrics(self, processed_lyrics):
         self.data['processed_lyrics'] = processed_lyrics

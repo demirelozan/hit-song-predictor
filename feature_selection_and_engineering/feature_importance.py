@@ -1,9 +1,7 @@
-import csv
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
-import sklearn
 import numpy as np
 from sklearn.datasets import load_digits
 from sklearn.feature_selection import SelectKBest, chi2, f_classif

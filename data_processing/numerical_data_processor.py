@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from data_model.numerical_song_data import NumericalSongData
 from data_model.categorical_song_data import CategoricalSongData
 
 
@@ -12,7 +13,7 @@ class NumericalDataProcessor:
         self.data = data
         self.numerical_features = numerical_features
         self.categorical_features = CategoricalSongData.get_categorical_features()
-
+        self.spotify_numerical_features = NumericalSongData.get_spotify_numerical_features()
     def remove_categorical_features(self):
         for feature in self.categorical_features:
             if feature in self.data.columns:
@@ -27,17 +28,24 @@ class NumericalDataProcessor:
 
     def normalize_features(self):
         """
-        Normalize numerical features.
+        Normalize numerical features except for spotify_numerical_features.
+        :param spotify_numerical_features: list - List of Spotify numerical features to exclude from normalization.
         """
+        # Select features to normalize
+        features_to_normalize = [f for f in self.numerical_features if f not in self.spotify_numerical_features]
+
+        # Apply MinMaxScaler only to the selected features
         scaler = MinMaxScaler()
-        self.data[self.numerical_features] = scaler.fit_transform(self.data[self.numerical_features])
+        self.data[features_to_normalize] = scaler.fit_transform(self.data[features_to_normalize])
 
     def standardize_features(self):
         """
         Standardize numerical features.
         """
+        features_to_standardize = [f for f in self.numerical_features if f not in self.spotify_numerical_features]
+
         scaler = StandardScaler()
-        self.data[self.numerical_features] = scaler.fit_transform(self.data[self.numerical_features])
+        self.data[features_to_standardize] = scaler.fit_transform(self.data[features_to_standardize])
 
     def process_data(self, normalize=True):
         """
@@ -55,6 +63,7 @@ class NumericalDataProcessor:
         # Debugging after convert_types_and_handle_missing
         print("After handling missing values:")
         print(self.data.isnull().sum())
+
         if normalize:
             self.normalize_features()
         else:

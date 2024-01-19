@@ -30,7 +30,7 @@ class DataProcessor:
         Remove specific unwanted features from the data.
         """
         print("Columns before removal:", self.data.columns)
-        features_to_remove = ['date', 'year', 'title', 'simple_title', 'artist', 'main_artist', 'spotify_link', 'spotify_id', 'video_link', 'analysis_url']
+        features_to_remove = ['date', 'year', 'simple_title', 'main_artist', 'spotify_link', 'spotify_id', 'video_link', 'analysis_url']
         for feature in features_to_remove:
             if feature in self.data.columns:
                 self.data = self.data.drop(feature, axis=1)
@@ -155,12 +155,6 @@ class DataProcessor:
             numerical_processor = NumericalDataProcessor(self.data, self.numerical_features)
             numerical_processor.process_data()
             print('Numerical Processing Complete')
-            # print('Numerical Processor Data is: ' + numerical_processor.data.columns)
-            nan_columns = self.check_nan_values(numerical_processor.data)
-            print("Numerical Columns with NaN values: ", nan_columns)
-            output_file_path = 'D:/Machine Learning Datasets/updated_data_after_numerical_processor.xlsx'
-            if output_file_path:
-                numerical_processor.data.to_excel(output_file_path, index=False)
 
             # Process categorical data
             categorical_processor = CategoricalDataProcessor(self.data, self.categorical_features)
@@ -169,11 +163,14 @@ class DataProcessor:
             nan_columns = self.check_nan_values(categorical_processor.data)
             print("Categorical Columns with NaN values: ", nan_columns)
             # self.handle_BERT_process(categorical_processor)
-            print('Categorical Processor Data is: ' + categorical_processor.data.columns)
 
             self.data = pd.concat([numerical_processor.data, categorical_processor.data], axis=1)
             nan_columns = self.check_nan_values(self.data)
             print("Columns with NaN values: ", nan_columns)
+
+            output_file_path = 'D:/Machine Learning Datasets/updated_data_after_processing.xlsx'
+            if output_file_path:
+                self.data.to_excel(output_file_path, index=False)
 
             # When continuing BERT, use the second one (that also adds self.data to pd.concat)
             # self.data = pd.concat([numerical_processor.data, categorical_processor.data, self.data], axis=1) # Combine the data
